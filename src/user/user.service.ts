@@ -14,13 +14,17 @@ export class UserService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      include: { roles: true },
     });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
+    // Map roles to role names
+    const userWithRoles = { ...user, roles: user.roles.map(role => role.name) };
+
     // Transform user object to UserDto
-    return plainToInstance(UserDto, user);
+    return plainToInstance(UserDto, userWithRoles);
   }
 
   async updateProfile(userId: string, data: UpdateUserDto) {

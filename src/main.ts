@@ -53,7 +53,6 @@ async function bootstrap() {
   // Setup Swagger
   const config = new DocumentBuilder()
     .setTitle('API')
-    .setDescription('The API documentation')
     .setVersion('1.0')
     .addTag('auth', 'Authentication operations')
     .addTag('users', 'User management operations')
@@ -74,22 +73,9 @@ async function bootstrap() {
       maxDisplayedTags: null, // Show all tags
       showExtensions: true, // Show vendor extensions
       showCommonExtensions: true, // Show common extensions
-      deepLinking: true, // Enable deep linking for tags and operations
-      layout: 'BaseLayout', // Use the base layout for better customization
-      syntaxHighlight: {
-        activate: true,
-        theme: 'monokai', // Use a better highlighting theme
-      },
       displayOperationId: true, // Show operation IDs
     },
     customSiteTitle: 'API Docs',
-    customCss: `
-      .swagger-ui .topbar { display: none }
-      .swagger-ui .info { margin: 30px 0 }
-      .swagger-ui .scheme-container { padding: 15px 0 }
-      .swagger-ui .opblock-tag { font-size: 18px }
-      .swagger-ui .opblock .opblock-summary-operation-id { font-size: 14px }
-    `, // Enhanced CSS styling
     explorer: true, // Enable the search functionality
   };
 

@@ -33,6 +33,12 @@ export class AuthUserResponseDto {
     example: true,
   })
   isVerified?: boolean;
+
+  @ApiProperty({
+    description: 'User roles',
+    example: ['user', 'admin'],
+  })
+  roles: string[];
 }
 
 /**

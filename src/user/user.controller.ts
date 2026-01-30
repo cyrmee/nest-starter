@@ -1,26 +1,28 @@
 import {
-  Controller,
-  Get,
-  UseGuards,
-  Request,
-  UsePipes,
-  ValidationPipe,
-  Patch,
   Body,
+  Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Patch,
+  Request,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { JwtAuthGuard } from '../auth/guards';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard, RolesGuard } from '../auth/guards';
+import { ROLES } from '../common/constants/roles';
 import { UpdateUserDto, UserDto } from './dto';
+import { UserService } from './user.service';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -71,6 +73,23 @@ export class UserController {
     await this.userService.deleteUser(req.user.id);
     return {
       message: 'User profile deleted successfully',
+    };
+  }
+
+  @Get('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLES.ADMIN)
+  @ApiOperation({ summary: 'Admin only endpoint' })
+  @ApiResponse({
+    status: 200,
+    description: 'Admin access granted',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  async adminOnly(@Request() req) {
+    return {
+      message: 'Welcome admin!',
+      user: req.user,
     };
   }
 }

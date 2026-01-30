@@ -1,5 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as argon2 from 'argon2';
+import { ROLES } from '../src/common/constants/roles';
 import { PrismaClient } from '../src/prisma/generated/client';
 
 const adapter = new PrismaPg({
@@ -9,6 +10,25 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  // Create roles
+  const userRole = await prisma.role.upsert({
+    where: { name: ROLES.USER },
+    update: {},
+    create: {
+      name: ROLES.USER,
+      description: 'Regular user',
+    },
+  });
+
+  const adminRole = await prisma.role.upsert({
+    where: { name: ROLES.ADMIN },
+    update: {},
+    create: {
+      name: ROLES.ADMIN,
+      description: 'Administrator',
+    },
+  });
+
   // Create test users
   await prisma.user.upsert({
     where: { email: 'john@example.com' },
@@ -23,6 +43,9 @@ async function main() {
         parallelism: 1, // degree of parallelism
       }),
       isVerified: false,
+      roles: {
+        connect: [{ id: userRole.id }],
+      },
     },
   });
 
@@ -39,6 +62,9 @@ async function main() {
         parallelism: 1,
       }),
       isVerified: true,
+      roles: {
+        connect: [{ id: adminRole.id }],
+      },
     },
   });
 

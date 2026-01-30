@@ -20,6 +20,7 @@ model User {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
   appSettings         AppSettings?
+  roles               Role[]
 
   @@index([email])
 }
@@ -35,4 +36,15 @@ model AppSettings {
   updatedAt       DateTime @updatedAt
 
   @@index([userId])
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
 }

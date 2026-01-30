@@ -54,6 +54,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       name: payload.name,
       isActive: payload.isActive,
       isVerified: payload.isVerified,
+      roles: payload.roles || [],
     };
   }
 }

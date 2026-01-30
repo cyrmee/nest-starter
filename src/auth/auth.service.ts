@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { AppSettingsService } from '../app-settings/app-settings.service';
+import { ROLES } from '../common/constants/roles';
 import { CryptoService } from '../common/crypto.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -33,7 +34,10 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({ 
+      where: { email },
+      include: { roles: true },
+    });
     if (user && (await argon2.verify(user.hash, pass))) {
       const { hash, ...result } = user;
       return result;
@@ -51,12 +55,14 @@ export class AuthService {
       throw new ForbiddenException('User with this email already exists');
     }
     const hash = await argon2.hash(userData.password);
+    const userRole = await this.prisma.role.findUnique({ where: { name: ROLES.USER } });
     const createdUser = await this.prisma.user.create({
       data: {
         email: userData.email,
         name: userData.name,
         hash,
         isVerified: false,
+        roles: userRole ? { connect: { id: userRole.id } } : undefined,
       },
     });
     await this.appSettingsService.create(createdUser.id, {
@@ -64,12 +70,19 @@ export class AuthService {
     });
     await this.requestEmailVerification(userData.email);
 
+    // Fetch user with roles
+    const userWithRoles = await this.prisma.user.findUnique({
+      where: { id: createdUser.id },
+      include: { roles: true },
+    });
+
     return {
-      id: createdUser.id,
-      email: createdUser.email,
-      name: createdUser.name,
-      isVerified: createdUser.isVerified,
-      isActive: createdUser.isActive,
+      id: userWithRoles!.id,
+      email: userWithRoles!.email,
+      name: userWithRoles!.name,
+      isVerified: userWithRoles!.isVerified,
+      isActive: userWithRoles!.isActive,
+      roles: userWithRoles!.roles.map(role => role.name),
     };
   }
 
@@ -100,6 +113,9 @@ export class AuthService {
           name: true,
           isVerified: true,
           isActive: true,
+          roles: {
+            select: { name: true },
+          },
         },
       });
       await this.redisClient.del(verificationKey);
@@ -109,13 +125,22 @@ export class AuthService {
         name: user.name,
         isVerified: user.isVerified,
         isActive: user.isActive,
+        roles: user.roles.map(role => role.name),
       };
       const accessToken = await this.generateAccessToken(payload);
       const refreshToken = await this.generateRefreshToken(user.id);
+      const userResponse: AuthUserResponseDto = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isVerified: user.isVerified,
+        isActive: user.isActive,
+        roles: user.roles.map(role => role.name),
+      };
       return {
-        user,
         accessToken,
         refreshToken,
+        user: userResponse,
       };
     } catch (error) {
       throw new InternalServerErrorException('Failed to verify email');
@@ -133,6 +158,7 @@ export class AuthService {
       name: user.name,
       isVerified: user.isVerified,
       isActive: user.isActive,
+      roles: user.roles.map(role => role.name),
     };
     const accessToken = await this.generateAccessToken(payload);
     const refreshToken = await this.generateRefreshToken(user.id);
@@ -142,6 +168,7 @@ export class AuthService {
       name: user.name,
       isVerified: user.isVerified,
       isActive: user.isActive,
+      roles: user.roles.map(role => role.name),
     };
     return {
       accessToken,
