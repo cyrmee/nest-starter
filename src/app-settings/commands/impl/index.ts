@@ -1,2 +1,0 @@
-// CQRS removed
-export {};

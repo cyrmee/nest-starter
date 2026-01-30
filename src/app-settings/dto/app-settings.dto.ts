@@ -11,20 +11,6 @@ export class AppSettingsDto {
   id: string;
 
   @ApiProperty({
-    description: 'Preferred currency for the user',
-    example: 'ETB',
-  })
-  @Expose()
-  preferredCurrency: string;
-
-  @ApiProperty({
-    description: 'Indicates whether amounts should be hidden',
-    example: false,
-  })
-  @Expose()
-  hideAmounts: boolean;
-
-  @ApiProperty({
     description: 'Theme preference for the application',
     example: 'system',
   })

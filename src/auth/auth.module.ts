@@ -40,10 +40,36 @@ import { LocalStrategy } from './strategies/local.strategy';
           );
         }
 
+        const parseExpiryToSeconds = (expiry: string): number => {
+          const defaultExpiry = 15 * 60;
+          if (!expiry) return defaultExpiry;
+          try {
+            const unit = expiry.slice(-1);
+            const value = parseInt(expiry.slice(0, -1), 10);
+            if (isNaN(value)) return defaultExpiry;
+            switch (unit) {
+              case 's':
+                return value;
+              case 'm':
+                return value * 60;
+              case 'h':
+                return value * 60 * 60;
+              case 'd':
+                return value * 24 * 60 * 60;
+              default:
+                return defaultExpiry;
+            }
+          } catch (error) {
+            return defaultExpiry;
+          }
+        };
+
+        const jwtAccessExpirationSeconds = parseExpiryToSeconds(jwtAccessExpiration);
+
         return {
           secret: jwtSecret,
           signOptions: {
-            expiresIn: jwtAccessExpiration,
+            expiresIn: jwtAccessExpirationSeconds,
           },
         };
       },

@@ -5,7 +5,7 @@ import { UpdateUserDto, UserDto } from './dto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getProfile(userId: string) {
     if (!userId) {
@@ -22,6 +22,7 @@ export class UserService {
     // Transform user object to UserDto
     return plainToInstance(UserDto, user);
   }
+
   async updateProfile(userId: string, data: UpdateUserDto) {
     if (!userId) {
       throw new Error('User ID is required for profile update');
@@ -46,9 +47,8 @@ export class UserService {
         },
       });
     }
-
-    return;
   }
+
   async deleteUser(userId: string) {
     if (!userId) {
       throw new Error('User ID is required for deletion');
@@ -57,7 +57,5 @@ export class UserService {
     await this.prisma.user.delete({
       where: { id: userId },
     });
-
-    return;
   }
 }

@@ -60,8 +60,6 @@ export class AuthService {
       },
     });
     await this.appSettingsService.create(createdUser.id, {
-      preferredCurrency: 'ETB',
-      hideAmounts: true,
       themePreference: 'system',
     });
     await this.requestEmailVerification(userData.email);
@@ -343,14 +341,15 @@ export class AuthService {
   }
 
   async generateAccessToken(payload: any): Promise<string> {
-    const accessTokenExpiry = this.configService.get<string>(
+    const accessTokenExpiryStr = this.configService.get<string>(
       'JWT_ACCESS_EXPIRATION',
     );
-    if (!accessTokenExpiry) {
+    if (!accessTokenExpiryStr) {
       throw new Error(
         'JWT_ACCESS_EXPIRATION environment variable is not defined',
       );
     }
+    const expiryInSeconds = this.parseExpiryToSeconds(accessTokenExpiryStr);
     const jti = await this.cryptoService.generateRandomToken(24);
     const tokenPayload = {
       ...payload,
@@ -358,9 +357,8 @@ export class AuthService {
       jti,
     };
     const token = this.jwtService.sign(tokenPayload, {
-      expiresIn: accessTokenExpiry,
+      expiresIn: expiryInSeconds,
     });
-    const expiryInSeconds = this.parseExpiryToSeconds(accessTokenExpiry);
     const userId = payload.sub;
     const tokenKey = `jwt_jti:${userId}:${jti}`;
     await this.redisClient
@@ -377,14 +375,15 @@ export class AuthService {
   }
 
   async generateRefreshToken(userId: string): Promise<string> {
-    const refreshTokenExpiry = this.configService.get<string>(
+    const refreshTokenExpiryStr = this.configService.get<string>(
       'JWT_REFRESH_EXPIRATION',
     );
-    if (!refreshTokenExpiry) {
+    if (!refreshTokenExpiryStr) {
       throw new Error(
         'JWT_REFRESH_EXPIRATION environment variable is not defined',
       );
     }
+    const expiryInSeconds = this.parseExpiryToSeconds(refreshTokenExpiryStr);
     const jti = await this.cryptoService.generateRandomToken(24);
     const payload = {
       sub: userId,
@@ -392,9 +391,8 @@ export class AuthService {
       jti,
     };
     const token = this.jwtService.sign(payload, {
-      expiresIn: refreshTokenExpiry,
+      expiresIn: expiryInSeconds,
     });
-    const expiryInSeconds = this.parseExpiryToSeconds(refreshTokenExpiry);
     const tokenKey = `refresh_jti:${userId}:${jti}`;
     await this.redisClient.set(
       tokenKey,

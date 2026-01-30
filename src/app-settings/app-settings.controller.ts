@@ -1,27 +1,27 @@
 import {
-  Controller,
-  Get,
-  Patch,
-  Delete,
   Body,
-  UseGuards,
-  Request,
-  ValidationPipe,
-  UsePipes,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Patch,
+  Request,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { AppSettingsService } from './app-settings.service';
 import { JwtAuthGuard } from '../auth/guards';
-import { UpdateAppSettingsDto } from './dto/update-app-settings.dto';
+import { AppSettingsService } from './app-settings.service';
 import { CreateAppSettingsDto } from './dto/create-app-settings.dto';
+import { UpdateAppSettingsDto } from './dto/update-app-settings.dto';
 
 @ApiTags('app-settings')
 @Controller('app-settings')
@@ -46,8 +46,6 @@ export class AppSettingsController {
     const settings = await this.appSettingsService.getAppSettings(userId);
     if (!settings) {
       const defaults: CreateAppSettingsDto = {
-        preferredCurrency: 'ETB',
-        hideAmounts: true,
         themePreference: 'system',
       };
       await this.appSettingsService.create(userId, defaults);
@@ -85,8 +83,6 @@ export class AppSettingsController {
     const userId = req.user.id;
     await this.appSettingsService.remove(userId);
     const defaults: CreateAppSettingsDto = {
-      preferredCurrency: 'ETB',
-      hideAmounts: true,
       themePreference: 'system',
     };
     await this.appSettingsService.create(userId, defaults);
