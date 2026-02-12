@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
-import { CryptoService } from './crypto.service';
+import { RandomService } from './random.service';
 
 @Global()
 @Module({
-  providers: [CryptoService],
-  exports: [CryptoService],
+  providers: [RandomService],
+  exports: [RandomService],
 })
 export class CommonModule {}

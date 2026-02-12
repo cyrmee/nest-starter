@@ -1,24 +1,24 @@
 import {
-  ForbiddenException,
-  forwardRef,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
+    ForbiddenException,
+    forwardRef,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 import { ROLES } from '../common/constants/roles';
-import { CryptoService } from '../common/crypto.service';
+import { RandomService } from '../common/random.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
-  AuthUserResponseDto,
-  ChangePasswordDto,
-  JwtAuthResponseDto,
-  RegisterDto,
-  ResetPasswordDto,
+    AuthUserResponseDto,
+    ChangePasswordDto,
+    JwtAuthResponseDto,
+    RegisterDto,
+    ResetPasswordDto,
 } from './dto';
 
 @Injectable()
@@ -29,7 +29,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => AppSettingsService))
     private readonly appSettingsService: AppSettingsService,
-    private readonly cryptoService: CryptoService,
+    private readonly randomService: RandomService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -303,7 +303,7 @@ export class AuthService {
       if (!user) {
         return true;
       }
-      const resetToken = await this.cryptoService.generateRandomToken();
+      const resetToken = await this.randomService.generateRandomToken();
       const resetKey = `password_reset:${resetToken}`;
       await this.redisClient.set(resetKey, user.id, { EX: 600 });
       // TODO: send the reset token via email
@@ -377,7 +377,7 @@ export class AuthService {
       );
     }
     const expiryInSeconds = this.parseExpiryToSeconds(accessTokenExpiryStr);
-    const jti = await this.cryptoService.generateRandomToken(24);
+    const jti = await this.randomService.generateRandomToken(24);
     const tokenPayload = {
       ...payload,
       type: 'access',
@@ -411,7 +411,7 @@ export class AuthService {
       );
     }
     const expiryInSeconds = this.parseExpiryToSeconds(refreshTokenExpiryStr);
-    const jti = await this.cryptoService.generateRandomToken(24);
+    const jti = await this.randomService.generateRandomToken(24);
     const payload = {
       sub: userId,
       type: 'refresh',

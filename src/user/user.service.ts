@@ -38,17 +38,14 @@ export class UserService {
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
-      data: {
-        ...data,
-      },
+      data,
     });
 
-    if (user?.email !== updatedUser?.email) {
+    // If email was changed, reset verification status
+    if (user?.email !== updatedUser.email && data.email) {
       await this.prisma.user.update({
         where: { id: userId },
-        data: {
-          isVerified: false,
-        },
+        data: { isVerified: false },
       });
     }
   }

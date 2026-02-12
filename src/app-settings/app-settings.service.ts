@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CryptoService } from '../common/crypto.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAppSettingsDto } from './dto/create-app-settings.dto';
 import { UpdateAppSettingsDto } from './dto/update-app-settings.dto';
@@ -8,7 +7,6 @@ import { UpdateAppSettingsDto } from './dto/update-app-settings.dto';
 export class AppSettingsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cryptoService: CryptoService,
   ) {}
 
   /**
